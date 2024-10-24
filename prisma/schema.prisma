@@ -1,0 +1,57 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Users {
+  id      Int     @id @default(autoincrement())
+  email   String  @unique
+  name    String
+  surname String
+  role    String // 'admin, reviewer, user'
+
+//Relations
+
+  reviews   Check[] @relation("ReviewerRelation")
+  checks    Check[] @relation("UserRelation")
+}
+
+model Check {
+  id                Int     @id @default(autoincrement())
+  event_id          Int     @unique
+  reviewer_id       Int 
+  user_id           Int
+  quality_score     Float // 'overal score for an event'
+  reviewer_feedback String
+  user_comment      String
+  check_date        DateTime @default(now())
+
+//Realations
+
+  reviewer  Users @relation("ReviewerRelation", fields: [reviewer_id], references: [id])
+  user      Users @relation("UserRelation", fields: [user_id], references: [id])
+  event     Events @relation("ChecksRelation", fields: [event_id], references: [id])
+}
+
+model Events {
+  id            Int     @id @default(autoincrement())
+  url           String
+  type          String
+  creation_date DateTime
+
+  // Relations
+
+  checks Check[] @relation("ChecksRelation")
+  
+   
+}
